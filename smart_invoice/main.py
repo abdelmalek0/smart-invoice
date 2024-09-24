@@ -20,7 +20,8 @@ CORS(app)
 
 US_FORMAT = [",", "."]
 EU_FORMAT = [".", ","]
-output_file = "output.xlsx"
+OUTPUT_FOLDER = './output/'
+output_filepath = os.path.join(OUTPUT_FOLDER, "output.xlsx")
 ocr = False
 
 
@@ -183,18 +184,21 @@ def extract_data(file_path: str, show: bool = False):
         cell.font = font
         cell.alignment = alignment
 
-    workbook.save(output_file)
+    workbook.save(output_filepath)
 
 
-@app.route("/convert", methods=["POST"])
+@app.route("/api/convert", methods=["POST"])
 @cross_origin()
 def convert():
     pdf_file = request.files["pdf"]
     pdf_file.save(pdf_file.filename)
     pdf_file = pdf_file.filename
 
-    if os.path.exists(output_file):
-        os.remove(output_file)
+    if not os.path.exists(OUTPUT_FOLDER):
+        os.makedirs(OUTPUT_FOLDER)
+
+    if os.path.exists(output_filepath):
+        os.remove(output_filepath)
 
     thread = threading.Thread(target=extract_data, args=(pdf_file, False))
     thread.start()
@@ -205,7 +209,7 @@ def convert():
 
     if not ocr:
         return send_file(
-            output_file,
+            output_filepath,
             as_attachment=True,
             mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
@@ -214,4 +218,4 @@ def convert():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host='0.0.0.0', port=8080)

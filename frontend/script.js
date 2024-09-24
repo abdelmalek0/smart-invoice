@@ -18,7 +18,8 @@ document
   });
 
 function convertToExcel(formData) {
-  fetch("http://172.30.29.33:8080/convert", {
+  const base_host = window.location.hostname
+  fetch(`http://${base_host}:8080/api/convert`, {
     method: "POST",
     body: formData,
   })
